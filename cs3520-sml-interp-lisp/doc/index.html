@@ -1,0 +1,240 @@
+<html><head></head><body><h1>Interpreter for Lisp</h1>
+
+<p>You will write the evaluator for a simple lisp language. The data types
+for the abstract syntax tree are provided, as is a parser and the
+code that drives the read-eval-print loop (REPL):</p>
+
+<ul>
+<li><code>ast.sml</code>: data types for the abstract syntax tree</li>
+<li><code>parse.sml</code>: the parser</li>
+<li><code>lisp.sml</code>: the tokenizer and main read-eval-print loop</li>
+<li><code>eval.sml</code>: you should write the evaluator here</li>
+</ul>
+
+<p>The grammar for the language is provided here:</p>
+
+<pre><code>input           -&gt;  expression | fundef
+fundef          -&gt;  ( define function arglist expression )
+arglist         -&gt;  ( variable* )
+expression      -&gt;  value
+                 |  variable
+                 |  ( if expression expression expression )
+                 |  ( while expression expression )
+                 |  ( set variable expression )
+                 |  ( begin expression+ )
+                 |  ( optr expression* )
+optr            -&gt;  function | value-op
+value           -&gt;  integer | quoted-const
+value-op        -&gt;  + | - | * | / | = | &lt; | &gt; | cons | car | cdr
+                 |  number? | symbol? | list? | null? | print
+quoted-const    -&gt;  &#39;S-expression
+S-expression    -&gt;  integer | symbol | ( S-expression* )
+symbol          -&gt;  name
+function        -&gt;  name
+variable        -&gt;  name
+integer         -&gt;  sequence of digits, possibly preceded by minus sign
+name            -&gt;  any sequence of characters not an integer, and not
+                    containing a blank or any of the following characters:
+                    ( ) ;.
+</code></pre>
+
+<p>A function cannot be one of the “keywords” define, if, while, begin,
+or set, or any of the value-op&#39;s. Aside from this, names can use any
+characters on the keyboard. Comments are introduced by the
+character &#39;;&#39; and continue to the end of the line; this is why &#39;;&#39;
+cannot occur within a name. A session is terminated by entering
+“quit”; thus it is highly inadvisable to use this name for a
+variable.</p>
+
+<h2>The details</h2>
+
+<p>You must write the <code>eval</code> function that evaluates an expression in
+lisp. It&#39;s type signature is:</p>
+
+<pre><code>fn: (string * sxp) list * expression -&gt; (string * sxp) list * sxp
+</code></pre>
+
+<p>The <code>eval</code> function accepts a pair containing an environment, i.e.,
+the local variables (called <em>rho</em>), and the expression to evaluate
+(an instance of the <code>expression</code> type). It returns the updated
+environment (with any changes made during evaluation) and the result
+value (an s-expression).</p>
+
+<p>Expression evaluation depends on the specific kind of expression.
+See <code>ast.sml</code> for the type definitions:</p>
+
+<ul>
+<li><p><code>ValExp</code>: if the input is a value, simply return the value (the
+s-expression stored inside the <code>ValExp</code> instance).</p></li>
+
+<li><p><code>VarExp</code>: if the input is a variable, look it up in the local
+environment and return the value found. If it is not present in
+the local environment, try the global environment. If it is not
+present there, signal an error by raising a RuntimeError with a
+suitable message. Use the functions defined at the top of
+<code>eval.sml</code> to look up values in <em>rho</em> and in the global
+environment.</p></li>
+
+<li><p><code>IfExp</code>: evaluate the condition. If the result is a true
+value (anything other than <code>NilSxp</code>), evaluate and return the
+“then” branch. Otherwise, evaluate and return the “else” branch.</p></li>
+
+<li><p><code>WhileExp</code>: evaluate the condition. If the result is false
+(<code>NilSxp</code>) then return <code>NilSxp</code>, otherwise evaluate the body and
+repeat.</p></li>
+
+<li><p><code>SetExp</code>: evaluate the value. If the variable name is present in
+the local environment, then store the value there. If not, store
+it in the global environment. Return the value.</p></li>
+
+<li><p><code>BeginExp</code>: evaluate all of the expressions in order and return
+the result of evaluating the last one.</p></li>
+
+<li><p><code>BinaryBuiltinExp</code> and <code>UnaryBuiltinExp</code> primitive operations:</p>
+
+<ul>
+<li><p><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>:
+, <code>&lt;</code>, and <code>&gt;</code>: evaluate the arguments and
+make sure both results are <code>NumSxp</code> instances. Apply the
+appropriate operation on the numbers, wrap the result in a
+<code>NumSxp</code>, and return it.</p></li>
+
+<li><p><code>&lt;</code>, and <code>&gt;</code>: evaluate the arguments and make sure both
+results are <code>NumSxp</code> instances. Apply the appropriate
+operation on the numbers, return <code>SymSxp &#34;T&#34;</code> for true or
+<code>NilSxp</code> for false.</p></li>
+
+<li><p><code>=</code>: evaluate both arguments and compare the results. The
+results are equal if: (1) they are both numbers and they are
+the same number, (2) they are both symbols and they are the same
+symbol, or (3) they are both nil values. All other cases should
+return false (the <code>NilSxp</code> value). Return <code>SymSxp &#34;T&#34;</code> for true.</p></li>
+
+<li><p><code>cons</code>: evaluate both arguments. If the second argument is
+anything other than a list or a nil value, signal an error.
+Otherwise, build a list value from them and return it.</p></li>
+
+<li><p><code>car</code>, <code>cdr</code>: evaluate the arguments and insist that the
+result is a list.  Return the appropriate part.</p></li>
+
+<li><p><code>number?</code>, <code>symbol?</code>, <code>list?</code>, and <code>null?</code>: evaluate the
+argument and return either true (the symbol <code>T</code>) or false
+(the <code>NilSxp</code> value) based on the type of the result.</p></li>
+
+<li><p><code>print</code>: , evaluate the argument, convert the result to a
+string using the <code>sxpToString</code> function in <code>ast.sml</code>, and
+print it.  Return the value.</p></li>
+</ul></li>
+
+<li><p>User-defined functions: get the named function from the
+global list of functions (it is an error if the function
+does not exist). Make sure the number of arguments passed in
+matches the number of formal parameters in the function
+definition.</p>
+
+<p>Create a new environment where the keys are the formal
+parameter names and the values are the evaluated arguments.
+Use this new environment when you evaluate the body of the
+function. Return the result.</p></li>
+</ul>
+
+<p>In each of these cases, <code>eval</code> is given a local environment called
+<em>rho</em> as one of the inputs, and it must return an updated version of
+<em>rho</em> as one of the return values. <em>rho</em> is just a list of pairs,
+where each pair contains the name of the variable and the value of
+the variable. Evaluating an expression may have a <em>side effect</em>
+where one or more variables change, so it is important to keep track
+of those changes. Since lists are immutable, the only way to make a
+change to <em>rho</em> is to return the modified list.</p>
+
+<p>This is more complicated with more complex expressions. For example,
+consider an if expression: it has expressions for the condition, the
+&#34;then&#34; part, and the &#34;else&#34; part. The following steps must be taken
+to correctly evaluate it:</p>
+
+<ul>
+<li><p>Evaluate the condition part (using a recursive call the <code>eval</code>)
+using <em>rho</em> and capture both the return value and the updated
+environment, which we will call <em>rho&#39;</em>.</p>
+
+<ul>
+<li><p>If the condition returned a true value (anything other than
+<code>NilSxp</code> then evaluate the &#34;then&#34; part with a recursive call
+to <code>eval</code>. Use <em>rho&#39;</em> in the recursive call, since it
+contains any changes that might have been made to the
+environment while the condition was being evaluated. Return
+both the return value and the updated environment returned
+by the recursive <code>eval</code> call when it processed the &#34;then&#34;
+part. Think of this final version of the environment as
+<em>rho&#39;&#39;</em>.</p></li>
+
+<li><p>If the condition return a false value (<code>NilSxp</code>) then
+evaluate the &#34;else&#34; part with a recursive call to <code>eval</code>.
+The recursive call should use <em>rho&#39;</em> and returns <em>rho&#39;&#39;</em> as
+well as the result value. Return that result value and
+<em>rho&#39;&#39;</em>.</p></li>
+</ul></li>
+</ul>
+
+<p>The process is similar for all expression types that involve
+recursive calls to <code>eval</code>. For each new recursive call, the latest
+version of <em>rho</em> needs to be passed in, and it returns an updated
+version that should be used (or returned) from that point forward.</p>
+
+<p>The only exception to this is in function applications. The same
+chaining of <em>rho</em> environments is used while evaluating the argument
+list, but then the formal parameters are bound to the argument
+values and this forms a completely new environment that is used when
+evaluating the function body. Call the last version of <em>rho</em> that
+resulted from evaluating the argument list <em>rho&#39;</em> and the new
+environment created when binding the formal parameters to the
+argument values <em>newrho</em>. Here&#39;s how they interact:</p>
+
+<ul>
+<li><p>When <code>eval</code> is called to evaluate the expression with the
+function call, it gets <em>rho</em> as its input. It evaluates the
+argument list (a list of expressions) by calling <code>eval</code>
+recursively, once for each argument, and gather the resulting
+values. Each time it makes a recursive <code>eval</code> call it trades the
+latest version of <em>rho</em> for a new <em>rho&#39;</em>, which is the version
+used going forward.</p></li>
+
+<li><p>The new environment <em>newrho</em> is created from scratch, with one
+entry for each formal parameter. The name of the variable is the
+formal parameter, and the value is the result handed back by
+each recursive call to <code>eval</code>. So if there were five parameters
+(and thus five argumentss), there will be five recursive calls
+to <code>eval</code> (one for each argument) and a total of six version of
+<em>rho</em>:</p>
+
+<ul>
+<li>eval is called with <em>rho</em></li>
+<li>argument 1: call <code>eval</code> giving it <em>rho</em> and getting back
+<em>rho1</em></li>
+<li>argument 2: call <code>eval</code> giving it <em>rho1</em> and getting back
+<em>rho2</em></li>
+<li>argument 3: call <code>eval</code> giving it <em>rho1</em> and getting back
+<em>rho3</em></li>
+<li>argument 4: call <code>eval</code> giving it <em>rho1</em> and getting back
+<em>rho4</em></li>
+<li>argument 5: call <code>eval</code> giving it <em>rho1</em> and getting back
+<em>rho5</em></li>
+<li>call the final version <em>rho&#39;</em> as a generic label, but it is
+the same as <em>rho5</em> in this exaple</li>
+</ul></li>
+
+<li><p>Evaluate the body expression of the function:</p>
+
+<ul>
+<li><p>The recursive call to <code>eval</code> gets <em>newrho</em> and the body
+expression as input</p></li>
+
+<li><p>It returns the result value and <em>newrho&#39;</em></p></li>
+</ul></li>
+
+<li><p>The original call to <code>eval</code> is finally ready to return. It
+returns the result value (from evaluating the body expression)
+and <em>rho&#39;</em>. Note that it does NOT return <em>newrho&#39;</em>. That value
+is discarded at this point.</p></li>
+</ul>
+</body></html>

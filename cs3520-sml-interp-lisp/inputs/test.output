@@ -1,0 +1,150 @@
+Lisp interpreter
+Fall 2019 version
+--> --> --> mod
+--> --> +1
+--> --> --> --> (a)
+--> --> (a b)
+--> --> ((a) b)
+--> --> ((b (c d)))
+--> --> T
+--> --> ()
+--> --> length
+--> --> caar
+--> --> cadr
+--> --> cddr
+--> --> caddr
+--> --> cadar
+--> --> cadddr
+--> --> list1
+--> --> list2
+--> --> list3
+--> --> ((a) b)
+--> --> or
+--> --> atom?
+--> -->   >   >   >   >   > equal
+--> --> ()
+--> --> T
+--> --> ()
+--> --> and
+--> --> not
+--> --> divides
+--> -->   > interval-list
+--> --> (3 4 5 6 7)
+--> -->   >   >   >   > remove-multiples
+--> --> (3 5 7)
+--> -->   >   > sieve
+--> --> primes<=
+--> --> (2 3 5 7)
+--> -->   >   >   > insert
+--> -->   >   > insertion-sort
+--> --> (2 3 4 5 6 8)
+--> -->   >   >   > assoc
+--> --> Thant
+--> -->   >   >   >   > mkassoc
+--> --> ((I Ching))
+--> --> ((I Ching) (E coli))
+--> --> ((I Magnin) (E coli))
+--> --> Magnin
+--> --> ((apple ((texture crunchy))) (banana ((color yellow))))
+--> -->   >   > getprop
+--> --> crunchy
+--> -->   >   > putprop
+--> --> ((apple ((texture crunchy) (color red))) (banana ((color yellow))))
+--> --> red
+--> --> hasprop?
+--> -->   >   >   >   >   > gatherprop
+--> --> ((apple ((texture crunchy) (color red))) (banana ((color yellow))) (lemon ((color yellow))))
+--> --> (banana lemon)
+--> --> ()
+--> -->   > addelt
+--> -->   >   > member?
+--> --> size
+--> -->   >   >   >   > union
+--> --> (3 a)
+--> --> T
+--> --> (a 2 3)
+--> --> ((a b) 1)
+--> --> T
+--> -->   >   >   > sum
+--> -->   >   >   >   >   > wrong-sum
+--> --> 10
+--> --> 16
+--> --> right-sum
+--> -->   >   >   >   >   > right-sum-aux
+--> --> 10
+--> -->   >   >   >   >   > pre-ord
+--> --> A
+B
+C
+D
+E
+F
+G
+H
+I
+I
+--> --> --> --> ()
+--> --> front
+--> --> rm-front
+--> -->   > enqueue
+--> --> empty?
+--> --> --> --> level-ord
+--> -->   >   >   >   >   >   >   >   >   >   >   >   > level-ord*
+--> --> A
+B
+E
+C
+D
+F
+I
+G
+H
+()
+--> --> --> -->   >   >   >   > inter
+--> -->   >   >   >   >   > diff
+--> -->   >   >   > UNION
+--> -->   >   >   > INTER
+--> -->   >   >   > DIFF
+--> -->   > SELECT
+--> -->   >   > col-num
+--> -->   >   >   >   > include-rows
+--> -->   > nth
+--> -->   > PROJECT
+--> -->   >   > col-num*
+--> -->   >   >   > include-cols*
+--> -->   >   >   > include-cols
+--> -->   > append
+--> -->   >   >   >   >   >   >   >   >   >   >   > JOIN
+--> -->   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   > join-cols*
+--> -->   >   >   > join-cols
+--> -->   >   >   >   >   >   > ((Victim Crime Criminal Location) (Phelps robbery Harrison London) (Drebber murder Hope London) (Sir-Charles murder Stapleton Devonshire) (Lady-Eva blackmail Milverton London) (Brunton murder Howells West-Sussex))
+--> -->   >   >   >   > ((Victim Weapon Motive) (Drebber poison revenge) (Sir-Charles hound greed) (Brunton burial-alive passion))
+--> -->   >   >   > ((Victim Weapon Motive Criminal) (Drebber poison revenge Hope))
+--> --> --> -->   >   >   >   > eval
+--> -->   >   >   >   > apply-op
+--> --> 23
+--> --> 7
+--> --> 24
+--> -->   >   >   >   >   > eval
+--> --> 6
+--> -->   >   >   >   >   >   >   >   > eval
+--> -->   >   >   >   >   >   >   >   > apply-binary-op
+--> -->   >   >   >   >   >   > apply-unary-op
+--> --> a
+--> --> (3 9)
+--> -->   >   >   >   >   >   >   >   >   >   >   >   >   >   >   > eval
+--> --> userfun?
+--> -->   >   >   > apply-userfun
+--> -->   >   >   > evallist
+--> -->   >   >   > mkassoc*
+--> --> ((double ((a) (+ a a))))
+--> --> 8
+--> -->   >   > ((exp ((m n) (if (= n 0) 1 (* m (exp m (- n 1)))))))
+--> --> 64
+--> --> r-e-p-loop
+--> -->   >   >   >   >   >   > r-e-p-loop*
+--> -->   >   >   > process-def
+--> -->   >   > process-exp
+--> -->   >   >   >   >   > (double 8 exp 64)
+--> -->   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   >   > (cadr cddr caar caddr cadddr cadar list2 +1 length assoc mkassoc mkassoc* eval apply-unary-op apply-binary-op userfun? apply-userfun evallist r-e-p-loop r-e-p-loop* process-def process-exp (double 8))
+--> 
